@@ -1,0 +1,43 @@
+name: Build APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Bangun proyek Android
+        run: |
+          mkdir build && cd build
+          npm init -y
+          npm install @capacitor/core@6.2.0 @capacitor/cli@6.2.0 @capacitor/android@6.2.0
+          mkdir www
+          cp ../index.html ../manifest.webmanifest ../sw.js ../*.png www/
+          npx cap init "FERO AI" com.feroai.app --web-dir www
+          npx cap add android
+          npx cap sync android
+          find android/app/src/main/res -name 'ic_launcher*.png' -exec cp ../icon-maskable-512.png {} \;
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../../FERO-AI.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FERO-AI-apk
+          path: FERO-AI.apk
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: FERO AI APK ${{ github.run_number }}
+          files: FERO-AI.apk
