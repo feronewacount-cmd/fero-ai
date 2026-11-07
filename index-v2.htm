@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="FERO AI: asisten AI untuk ngobrol, ngoding, belajar, foto, suara, dan info terkini.">
+<link rel="manifest" href="manifest-v2.webmanifest">
+<link rel="icon" type="image/png" href="icon-192-v2.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v2.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FERO AI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>FERO AI</title>
+<style>
+:root{
+  --bg:#000000;
+  --surface:#111116;
+  --surface2:#1a1a22;
+  --line:#26262f;
+  --text:#ecedf3;
+  --muted:#8b8d9c;
+  --blue:#1f6fff;
+  --blue-press:#1859d1;
+  --danger:#ff5d5d;
+  --code:#0b0b10;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;min-width:0}
+.logo{flex:0 0 auto;width:28px;height:28px;border-radius:8px;background:var(--blue);display:grid;place-items:center;
+  font-weight:800;font-size:16px;color:#fff;letter-spacing:-1px}
+.brand div{min-width:0}
+.brand b{display:block;font-size:16px;letter-spacing:.5px;white-space:nowrap;line-height:1.2}
+.brand small{display:block;color:var(--muted);font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbtns{display:flex;gap:6px;flex:0 0 auto}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:9px;padding:6px 11px;font-size:13px;color:var(--muted);
+  display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.ghost:active{background:var(--surface)}
+.ghost.sq{width:34px;padding:6px}
+
+#chat{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:14px;width:100%;max-width:820px;align-self:center;
+  padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));
+  overscroll-behavior:contain}
+.msg{overflow-wrap:anywhere;min-width:0}
+.msg.user{align-self:flex-end;max-width:82%;background:var(--surface2);color:var(--text);
+  padding:8px 13px;border-radius:16px 16px 4px 16px;font-size:14.5px}
+.msg.user .t{white-space:pre-wrap;display:block}
+.umedia{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.umedia img{max-width:120px;max-height:120px;border-radius:10px;display:block;object-fit:cover}
+.msg.user audio{display:block;height:36px;max-width:100%;margin-bottom:2px}
+.vnlabel{display:block;font-size:13px;color:var(--muted)}
+.msg.ai{align-self:stretch;display:flex;gap:10px;align-items:flex-start;padding:0;background:none;border:0}
+.msg.ai .av{flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:12px;margin-top:1px}
+.msg.ai .body{flex:1;min-width:0;font-size:14.5px;line-height:1.6}
+.msg.err{align-self:stretch;background:#2a1212;border:1px solid #5a2020;color:#ffb4b4;padding:8px 12px;border-radius:12px;font-size:13.5px}
+.msg p{margin:0 0 .55em}.msg p:last-child{margin:0}
+.msg ul,.msg ol{margin:.2em 0 .55em;padding-left:1.25em}
+.msg code{background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 5px;
+  font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.codewrap{margin:.5em 0;border:1px solid var(--line);border-radius:10px;background:var(--code);overflow:hidden}
+.codebar{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;
+  border-bottom:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+.copy{background:transparent;border:1px solid var(--line);border-radius:6px;padding:1px 9px;font-size:11.5px;color:var(--text)}
+.copy:active{background:var(--surface2)}
+.codewrap pre{margin:0;padding:8px 11px;overflow-x:auto}
+.codewrap pre code{background:none;border:0;padding:0;white-space:pre;font-size:12.5px}
+.extra{margin-top:8px}
+.srcs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:6px}
+.srcs a{color:#6aa3ff;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:2px 9px;max-width:100%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acts{display:flex;gap:6px}
+.act{background:transparent;border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-size:11.5px;color:var(--muted)}
+.act:active{background:var(--surface)}
+.dots{display:inline-flex;gap:4px;padding:4px 0;vertical-align:middle}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:b 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+.waitlbl{font-size:12px;color:var(--muted);margin-left:8px}
+@keyframes b{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dots i,.recdot{animation:none;opacity:.7}}
+
+.hello{margin:auto;text-align:center;max-width:420px;padding:10px}
+.hello h1{margin:0 0 4px;font-size:22px;letter-spacing:.5px}
+.hello p{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+.sugs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.sug{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:13px;color:var(--text)}
+.sug:active{background:var(--surface2)}
+
+.composer{position:relative;border-top:1px solid var(--line);background:var(--bg);
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));
+  padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+#tray{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px}
+.thumb{position:relative;flex:0 0 auto;width:54px;height:54px}
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block}
+.thumb button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:#3a3a46;color:#fff;
+  font-size:13px;line-height:1;display:grid;place-items:center;padding:0}
+form#f{display:flex;gap:8px;align-items:flex-end}
+.rb{flex:0 0 auto;width:40px;height:40px;border:0;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff}
+.rb:active{background:var(--blue-press)}
+.rb:disabled{opacity:.45}
+.rb.plain{background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.rb.plain:active{background:var(--surface2)}
+textarea#q{flex:1;min-width:0;resize:none;max-height:120px;background:var(--surface);color:var(--text);
+  border:1px solid var(--line);border-radius:20px;padding:9px 14px;font:inherit;font-size:15px;line-height:1.4}
+textarea#q::placeholder{color:var(--muted)}
+#menu{position:absolute;left:12px;bottom:100%;margin-bottom:6px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:6px;display:flex;flex-direction:column;min-width:150px;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+#menu button{background:none;border:0;text-align:left;padding:9px 12px;border-radius:9px;display:flex;gap:10px;align-items:center;font-size:14px}
+#menu button:active{background:var(--surface2)}
+#recbar{display:flex;align-items:center;gap:10px}
+.recdot{width:10px;height:10px;border-radius:50%;background:var(--danger);animation:b 1s infinite}
+#recTime{font-variant-numeric:tabular-nums;font-size:15px}
+#recHint{flex:1;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#recbar .ghost{padding:8px 14px;font-size:14px}
+
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.panel{width:min(520px,100%);max-height:92%;overflow-y:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+@media (min-width:600px){.sheet{align-items:center}.panel{border-radius:18px}}
+.panel h2{margin:0 0 4px;font-size:19px}
+.panel p{margin:0 0 10px;color:var(--muted);font-size:13.5px}
+.panel ol{margin:0 0 12px;padding-left:1.2em;color:var(--muted);font-size:13.5px}
+.panel a{color:#6aa3ff}
+label{display:block;margin:10px 0 5px;font-size:13px;color:var(--muted)}
+input[type=password],input[type=text],select{width:100%;background:var(--bg);color:var(--text);
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:15px}
+.row{display:flex;gap:10px;margin-top:14px}
+.btn{flex:1;border:0;border-radius:12px;padding:11px;background:var(--blue);color:#fff;font-weight:600}
+.btn:active{background:var(--blue-press)}
+.btn.sec{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:500}
+.btn.dng{background:transparent;border:1px solid #5a2020;color:var(--danger);font-weight:500}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo" aria-hidden="true">F</div>
+    <div><b>FERO AI</b><small>Teks, foto, suara, info terkini</small></div>
+  </div>
+  <div class="hbtns">
+    <button class="ghost" id="newChat" type="button">Baru</button>
+    <button class="ghost sq" id="openSet" type="button" aria-label="Pengaturan">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="chat" aria-live="polite"></main>
+
+<div class="composer" id="composer">
+  <div id="menu" hidden>
+    <button type="button" id="mCam">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Kamera
+    </button>
+    <button type="button" id="mGal">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      Galeri foto
+    </button>
+  </div>
+  <div id="tray" hidden></div>
+  <form id="f" autocomplete="off">
+    <button class="rb plain" id="plus" type="button" aria-label="Tambah foto">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <textarea id="q" rows="1" placeholder="Tanya FERO AI apa saja..." aria-label="Pesan"></textarea>
+    <button class="rb" id="mic" type="button" aria-label="Rekam pesan suara">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
+    </button>
+    <button class="rb" id="send" type="submit" aria-label="Kirim" hidden>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+    </button>
+  </form>
+  <div id="recbar" hidden>
+    <span class="recdot" aria-hidden="true"></span>
+    <span id="recTime">0:00</span>
+    <span id="recHint">Merekam... bicara saja</span>
+    <button class="ghost" id="recCancel" type="button">Batal</button>
+    <button class="rb" id="recSend" type="button" aria-label="Kirim VN">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+    </button>
+  </div>
+  <input type="file" id="fCam" accept="image/*" capture="environment" hidden>
+  <input type="file" id="fGal" accept="image/*" multiple hidden>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h2 id="setTitle">Pengaturan</h2>
+    <p id="setIntro"></p>
+    <ol>
+      <li>Buka <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></li>
+      <li>Login Google, tekan <b>Create API key</b></li>
+      <li>Salin kuncinya, tempel di bawah</li>
+    </ol>
+    <label for="key">API key Gemini</label>
+    <input id="key" type="password" placeholder="AIza..." autocomplete="off" spellcheck="false">
+    <label for="model">Model</label>
+    <input id="model" type="text" spellcheck="false" autocapitalize="off">
+    <label for="search">Cari info di web</label>
+    <select id="search">
+      <option value="auto">Otomatis (hanya saat butuh info terkini)</option>
+      <option value="always">Selalu (lebih lambat)</option>
+      <option value="off">Mati (paling cepat)</option>
+    </select>
+    <div class="row">
+      <button class="btn sec" id="closeSet" type="button">Tutup</button>
+      <button class="btn" id="saveSet" type="button">Simpan</button>
+    </div>
+    <div class="row"><button class="btn dng" id="wipe" type="button">Hapus semua riwayat chat</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // Alamat server perantara (Cloudflare Worker). Kosong = setiap orang memakai API key sendiri.
+  var PROXY_URL = "https://fero-ai-proxy.feronewacount.workers.dev";
+
+  var MAX_IMG = 3;        // maksimal foto per pesan
+  var MAX_REC = 90;       // maksimal detik VN
+  var HIST_SEND = 16;     // jumlah pesan terakhir yang dikirim ke AI (lebih sedikit = lebih cepat)
+  var KEEP = 60;          // jumlah pesan yang disimpan di HP
+
+  var SUGS = [
+    "Berita teknologi hari ini",
+    "Jelaskan soal PR (kirim foto soalnya)",
+    "Buatkan kode Python kalkulator",
+    "Ajak aku ngobrol dong"
+  ];
+
+  // Pencarian web otomatis hanya jalan kalau pertanyaan terlihat butuh info terkini.
+  var SEARCH_RE = /(hari ini|sekarang|terbaru|terkini|berita|kabar|harga|kurs|skor|klasemen|jadwal|cuaca|trending|viral|minggu ini|bulan ini|tahun ini|barusan|saham|bitcoin|kripto|202[5-9]|(presiden|menteri|gubernur|ceo) (saat ini|sekarang|terbaru))/i;
+
+  var VN_NOTE = "(Ini pesan suara dari pengguna. Dengarkan, lalu awali jawabanmu dengan satu baris berformat: 🎤 \"isi pesan suara secara ringkas\", kemudian jawab seperti biasa.)";
+
+  function sysText(){
+    var now;
+    try { now = new Date().toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" }); }
+    catch(e){ now = new Date().toString(); }
+    return "Kamu FERO AI, teman ngobrol dan asisten serba bisa. Kamu bisa ngobrol santai, curhat, humor, ngoding, belajar, bantu PR sekolah, dan menjawab informasi umum. " +
+      "Jawab dalam bahasa Indonesia yang santai, hangat, dan natural seperti teman, tapi tetap jelas dan akurat. " +
+      "Jawab singkat dan langsung ke inti; beri penjelasan panjang hanya kalau pertanyaannya memang butuh. " +
+      "Untuk PR atau soal belajar, tunjukkan langkah demi langkah supaya paham, bukan hanya jawaban akhir, dan dorong siswa menulis dengan kata-katanya sendiri. " +
+      "Untuk kode, pakai blok kode dengan nama bahasanya. " +
+      "Kalau pengguna mengirim foto, lihat dan jelaskan isinya; kalau itu soal, kerjakan langkah demi langkah. " +
+      "Kalau ada hasil pencarian web, pakai itu untuk informasi terkini. " +
+      "Untuk topik kesehatan, hukum, atau keuangan, beri informasi umum dan sarankan bertanya ke ahlinya. " +
+      "Kalau tidak yakin, katakan terus terang. Waktu sekarang: " + now + ".";
+  }
+
+  var $ = function(id){ return document.getElementById(id); };
+  var chat = $("chat"), q = $("q"), sendBtn = $("send"), micBtn = $("mic"), sheet = $("sheet");
+
+  function load(k, d){ try { var v = localStorage.getItem(k); return v === null ? d : v; } catch(e){ return d; } }
+  function save(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
+
+  var state = {
+    key: load("fero_key", ""),
+    model: load("fero_model_v3", "gemini-3.8-flash"),
+    search: load("fero_search_v3", "auto"),
+    hist: [],
+    noThink: false
+  };
+  if (["auto", "always", "off"].indexOf(state.search) < 0) state.search = "auto";
+
+  // Riwayat v2; kalau belum ada, ambil dari obrolan "Bebas" milik versi lama.
+  try {
+    var raw = load("fero_hist_v3", "");
+    if (raw) state.hist = JSON.parse(raw) || [];
+    else {
+      var old = JSON.parse(load("fero_hist", "{}")) || {};
+      if (Array.isArray(old.bebas)) state.hist = old.bebas.map(function(t){ return { role: t.role === "user" ? "user" : "model", text: t.text || "" }; });
+    }
+  } catch(e){ state.hist = []; }
+  if (!Array.isArray(state.hist)) state.hist = [];
+
+  function strip(e){
+    var o = { role: e.role, text: e.text || "" };
+    if (e.thumbs && e.thumbs.length) o.thumbs = e.thumbs;
+    if (e.vn) o.vn = true;
+    if (e.src && e.src.length) o.src = e.src;
+    return o;
+  }
+  function persist(){
+    state.hist = state.hist.slice(-KEEP);
+    if (!save("fero_hist_v3", JSON.stringify(state.hist.map(strip)))){
+      save("fero_hist_v3", JSON.stringify(state.hist.map(function(e){ var o = strip(e); delete o.thumbs; return o; })));
+    }
+  }
+
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function inline(s){
+    s = esc(s);
+    s = s.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+    s = s.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
+    s = s.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?]|$)/g, "$1<i>$2</i>");
+    return s;
+  }
+
+  function render(text){
+    var out = [], parts = text.split(/```/);
+    parts.forEach(function(part, i){
+      if (i % 2 === 1){
+        var nl = part.indexOf("\n"), lang = "", body = part;
+        if (nl > -1){ lang = part.slice(0, nl).trim(); body = part.slice(nl + 1); }
+        body = body.replace(/\n$/, "");
+        out.push('<div class="codewrap"><div class="codebar"><span>' + esc(lang || "kode") +
+          '</span><button type="button" class="copy">Salin</button></div><pre><code>' + esc(body) + '</code></pre></div>');
+        return;
+      }
+      var lines = part.split("\n"), html = "", list = null, para = [];
+      function flushP(){ if (para.length){ html += "<p>" + para.join("<br>") + "</p>"; para = []; } }
+      function flushL(){ if (list){ html += "</" + list + ">"; list = null; } }
+      lines.forEach(function(rawLine){
+        var line = rawLine.replace(/\s+$/, "");
+        var h = line.match(/^#{1,6}\s+(.*)$/);
+        var ul = line.match(/^\s*[-*•]\s+(.*)$/);
+        var ol = line.match(/^\s*\d+[.)]\s+(.*)$/);
+        if (!line){ flushP(); flushL(); return; }
+        if (h){ flushP(); flushL(); html += "<p><b>" + inline(h[1]) + "</b></p>"; return; }
+        if (ul || ol){
+          flushP();
+          var t = ul ? "ul" : "ol";
+          if (list !== t){ flushL(); html += "<" + t + ">"; list = t; }
+          html += "<li>" + inline((ul || ol)[1]) + "</li>";
+          return;
+        }
+        flushL(); para.push(inline(line));
+      });
+      flushP(); flushL();
+      out.push(html);
+    });
+    return out.join("");
+  }
+
+  function nearBottom(){ return chat.scrollHeight - chat.scrollTop - chat.clientHeight < 140; }
+  function toBottom(){ chat.scrollTop = chat.scrollHeight; }
+
+  function srcHtml(src){
+    if (!src || !src.length) return "";
+    var a = src.slice(0, 4).filter(function(s){ return s && /^https?:\/\//i.test(s.u); }).map(function(s){
+      return '<a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.t || s.u) + '</a>';
+    });
+    return a.length ? '<div class="srcs"><span>Sumber:</span>' + a.join("") + '</div>' : "";
+  }
+
+  // Isi balasan AI. final=true menambahkan sumber dan tombol Salin/Baca.
+  function fillAi(div, text, src, final){
+    var body = div.querySelector(".body");
+    body.innerHTML = render(text);
+    div._raw = text;
+    if (final){
+      var ex = document.createElement("div");
+      ex.className = "extra";
+      ex.innerHTML = srcHtml(src) + '<div class="acts"><button type="button" class="act copyall">Salin</button><button type="button" class="act speak">Baca</button></div>';
+      body.appendChild(ex);
+    }
+  }
+
+  function addAi(text, src){
+    var d = document.createElement("div");
+    d.className = "msg ai";
+    d.innerHTML = '<div class="av">F</div><div class="body"></div>';
+    fillAi(d, text, src, true);
+    chat.appendChild(d);
+    return d;
+  }
+
+  function addUser(e){
+    var d = document.createElement("div");
+    d.className = "msg user";
+    if (e.thumbs && e.thumbs.length){
+      var m = document.createElement("div");
+      m.className = "umedia";
+      e.thumbs.forEach(function(t, i){
+        var im = document.createElement("img");
+        im.alt = "Foto";
+        im.src = (e.imgs && e.imgs[i]) ? "data:" + e.imgs[i].mime + ";base64," + e.imgs[i].b64 : t;
+        m.appendChild(im);
+      });
+      d.appendChild(m);
+    }
+    if (e.aud && e.aud.url){
+      var au = document.createElement("audio");
+      au.controls = true; au.src = e.aud.url; au.preload = "metadata";
+      d.appendChild(au);
+    } else if (e.vn){
+      var l = document.createElement("span");
+      l.className = "vnlabel"; l.textContent = "🎤 Pesan suara";
+      d.appendChild(l);
+    }
+    if (e.text){
+      var t = document.createElement("span");
+      t.className = "t"; t.textContent = e.text;
+      d.appendChild(t);
+    }
+    chat.appendChild(d);
+    return d;
+  }
+
+  function addErr(text){
+    var d = document.createElement("div");
+    d.className = "msg err";
+    d.textContent = text;
+    chat.appendChild(d);
+    toBottom();
+    return d;
+  }
+
+  function showHello(){
+    var w = document.createElement("div");
+    w.className = "hello";
+    w.innerHTML = "<h1>FERO AI</h1><p>Tanya apa saja, kirim foto, atau rekam suara.</p>";
+    var box = document.createElement("div");
+    box.className = "sugs";
+    SUGS.forEach(function(s){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "sug"; b.textContent = s;
+      b.addEventListener("click", function(){ q.value = s; q.focus(); grow(); sync(); });
+      box.appendChild(b);
+    });
+    w.appendChild(box);
+    chat.appendChild(w);
+  }
+
+  function draw(){
+    chat.innerHTML = "";
+    if (!state.hist.length) showHello();
+    state.hist.forEach(function(e){
+      if (e.role === "user") addUser(e); else addAi(e.text, e.src);
+    });
+    toBottom();
+  }
+
+  // ---------- Input: teks, foto, tombol kirim/mic ----------
+  var pending = [];   // foto yang menunggu dikirim
+  var busy = false;
+  var micOK = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (window.AudioContext || window.webkitAudioContext));
+
+  function grow(){ q.style.height = "auto"; q.style.height = Math.min(q.scrollHeight, 120) + "px"; }
+  function sync(){
+    var has = !!q.value.trim() || pending.length > 0;
+    sendBtn.hidden = !has;
+    micBtn.hidden = has || !micOK;
+  }
+  q.addEventListener("input", function(){ grow(); sync(); });
+  sync();
+
+  function renderTray(){
+    var tray = $("tray");
+    tray.innerHTML = "";
+    pending.forEach(function(p, i){
+      var w = document.createElement("div");
+      w.className = "thumb";
+      var im = document.createElement("img");
+      im.src = p.thumb; im.alt = "Foto " + (i + 1);
+      var x = document.createElement("button");
+      x.type = "button"; x.setAttribute("aria-label", "Hapus foto"); x.textContent = "×";
+      x.addEventListener("click", function(){ pending.splice(i, 1); renderTray(); sync(); });
+      w.appendChild(im); w.appendChild(x);
+      tray.appendChild(w);
+    });
+    tray.hidden = !pending.length;
+  }
+
+  function compress(file){
+    return new Promise(function(res, rej){
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function(){
+        function shrink(max, qual){
+          var s = Math.min(1, max / Math.max(im.width, im.height));
+          var c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(im.width * s)); c.height = Math.max(1, Math.round(im.height * s));
+          c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+          return c.toDataURL("image/jpeg", qual);
+        }
+        var full = shrink(1280, 0.82), thumb = shrink(160, 0.6);
+        URL.revokeObjectURL(url);
+        res({ mime: "image/jpeg", b64: full.split(",")[1], thumb: thumb });
+      };
+      im.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("img")); };
+      im.src = url;
+    });
+  }
+
+  function addFiles(files){
+    var list = Array.prototype.slice.call(files || []).filter(function(f){ return /^image\//.test(f.type); });
+    var room = MAX_IMG - pending.length;
+    if (!room){ addErr("Maksimal " + MAX_IMG + " foto per pesan."); return; }
+    list = list.slice(0, room);
+    Promise.all(list.map(function(f){ return compress(f).catch(function(){ return null; }); })).then(function(rs){
+      var ok = rs.filter(Boolean);
+      if (ok.length < list.length) addErr("Ada foto yang tidak bisa dibuka.");
+      pending = pending.concat(ok);
+      renderTray(); sync();
+    });
+  }
+
+  var menu = $("menu");
+  $("plus").addEventListener("click", function(e){ e.stopPropagation(); menu.hidden = !menu.hidden; });
+  document.addEventListener("click", function(e){ if (!menu.hidden && !menu.contains(e.target)) menu.hidden = true; });
+  $("mCam").addEventListener("click", function(){ menu.hidden = true; $("fCam").click(); });
+  $("mGal").addEventListener("click", function(){ menu.hidden = true; $("fGal").click(); });
+  ["fCam", "fGal"].forEach(function(id){
+    $(id).addEventListener("change", function(){ addFiles(this.files); this.value = ""; });
+  });
+
+  chat.addEventListener("click", function(e){
+    var t = e.target;
+    if (!t.classList) return;
+    if (t.classList.contains("copy")){
+      var code = t.closest(".codewrap").querySelector("code").textContent;
+      flash(t, code);
+      return;
+    }
+    if (t.classList.contains("copyall")){ flash(t, t.closest(".msg")._raw || ""); return; }
+    if (t.classList.contains("speak")){
+      var synth = window.speechSynthesis;
+      if (!synth){ t.textContent = "Tidak didukung"; return; }
+      if (synth.speaking){ synth.cancel(); Array.prototype.forEach.call(chat.querySelectorAll(".speak"), function(b){ b.textContent = "Baca"; }); return; }
+      var plain = (t.closest(".msg")._raw || "").replace(/```[\s\S]*?```/g, " (ada kode) ").replace(/[*#`_>|]/g, "");
+      var u = new SpeechSynthesisUtterance(plain);
+      u.lang = "id-ID";
+      u.onend = u.onerror = function(){ t.textContent = "Baca"; };
+      t.textContent = "Berhenti";
+      synth.speak(u);
+    }
+  });
+  function flash(btn, text){
+    var old = btn.textContent;
+    function done(){ btn.textContent = "Tersalin"; setTimeout(function(){ btn.textContent = old; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function(){ btn.textContent = "Gagal"; });
+    else btn.textContent = "Gagal";
+  }
+
+  // ---------- Rekam VN (WAV 16 kHz mono, dibaca langsung oleh AI) ----------
+  var rec = null;
+
+  function down(chunks, inRate, outRate){
+    var n = 0; chunks.forEach(function(c){ n += c.length; });
+    var all = new Float32Array(n), o = 0;
+    chunks.forEach(function(c){ all.set(c, o); o += c.length; });
+    if (inRate <= outRate) return { data: all, rate: inRate };
+    var ratio = inRate / outRate, len = Math.floor(n / ratio), out = new Float32Array(len);
+    for (var i = 0; i < len; i++){
+      var a = Math.floor(i * ratio), b = Math.min(n, Math.floor((i + 1) * ratio)), s = 0;
+      for (var j = a; j < b; j++) s += all[j];
+      out[i] = s / ((b - a) || 1);
+    }
+    return { data: out, rate: outRate };
+  }
+  function encodeWav(f, rate){
+    var buf = new ArrayBuffer(44 + f.length * 2), v = new DataView(buf);
+    function w(off, s){ for (var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); }
+    w(0, "RIFF"); v.setUint32(4, 36 + f.length * 2, true); w(8, "WAVE"); w(12, "fmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, "data"); v.setUint32(40, f.length * 2, true);
+    for (var i = 0; i < f.length; i++){
+      var s = Math.max(-1, Math.min(1, f[i]));
+      v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    }
+    return new Uint8Array(buf);
+  }
+  function toB64(u8){
+    var s = "", n = u8.length;
+    for (var i = 0; i < n; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+
+  function fmtT(ms){ var s = Math.floor(ms / 1000); return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60); }
+  function tick(){
+    if (!rec) return;
+    var ms = Date.now() - rec.t0;
+    $("recTime").textContent = fmtT(ms);
+    if (ms >= MAX_REC * 1000) finishRec(true);
+  }
+
+  function startRec(){
+    if (busy || rec) return;
+    if (!state.key && !PROXY_URL){ openSettings(); return; }
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then(function(stream){
+      var AC = window.AudioContext || window.webkitAudioContext, ctx = new AC();
+      if (ctx.resume) ctx.resume();
+      var src = ctx.createMediaStreamSource(stream), proc = ctx.createScriptProcessor(4096, 1, 1), chunks = [];
+      proc.onaudioprocess = function(ev){ chunks.push(new Float32Array(ev.inputBuffer.getChannelData(0))); };
+      src.connect(proc); proc.connect(ctx.destination);
+      rec = { stream: stream, ctx: ctx, src: src, proc: proc, chunks: chunks, t0: Date.now(), timer: setInterval(tick, 250) };
+      $("f").hidden = true; $("recbar").hidden = false; $("recTime").textContent = "0:00";
+    }).catch(function(){
+      addErr("Mikrofon tidak bisa dipakai. Izinkan akses mikrofon untuk situs ini di pengaturan browser.");
+    });
+  }
+
+  function endRec(){
+    var r = rec; rec = null;
+    clearInterval(r.timer);
+    try { r.proc.disconnect(); r.src.disconnect(); } catch(e){}
+    r.stream.getTracks().forEach(function(t){ t.stop(); });
+    var rate = r.ctx.sampleRate;
+    try { r.ctx.close(); } catch(e){}
+    $("recbar").hidden = true; $("f").hidden = false;
+    return { chunks: r.chunks, rate: rate, ms: Date.now() - r.t0 };
+  }
+
+  function finishRec(doSend){
+    if (!rec) return;
+    var r = endRec();
+    if (!doSend) return;
+    if (r.ms < 700){ addErr("VN terlalu pendek. Tahan sedikit lebih lama."); return; }
+    var d = down(r.chunks, r.rate, 16000);
+    var wav = encodeWav(d.data, d.rate);
+    var blob = new Blob([wav], { type: "audio/wav" });
+    send({ role: "user", text: "", vn: true, aud: { mime: "audio/wav", b64: toB64(wav), url: URL.createObjectURL(blob) } });
+  }
+
+  micBtn.addEventListener("click", startRec);
+  $("recCancel").addEventListener("click", function(){ finishRec(false); });
+  $("recSend").addEventListener("click", function(){ finishRec(true); });
+  if (!micOK) micBtn.hidden = true;
+
+  // ---------- Kirim ke AI ----------
+  function wantSearch(e){
+    if (state.search === "always") return true;
+    if (state.search === "off") return false;
+    return SEARCH_RE.test(e.text || "");
+  }
+
+  function buildBody(useSearch){
+    var h = state.hist.slice(-HIST_SEND);
+    while (h.length && h[0].role !== "user") h.shift();
+    var last = state.hist[state.hist.length - 1];
+    var contents = h.map(function(e){
+      var parts = [];
+      if (e.role !== "user"){ return { role: "model", parts: [{ text: e.text || "." }] }; }
+      var recent = h.indexOf(e) >= h.length - 4;
+      if (recent) (e.imgs || []).forEach(function(i){ parts.push({ inlineData: { mimeType: i.mime, data: i.b64 } }); });
+      var isLastVn = !!(e.aud && e === last);
+      if (isLastVn) parts.push({ inlineData: { mimeType: e.aud.mime, data: e.aud.b64 } });
+      var t = isLastVn ? VN_NOTE : (e.text || "");
+      if (!t){
+        if (e.imgs && e.imgs.length && recent) t = "Tolong lihat gambar ini.";
+        else if (e.vn) t = "[Pesan suara]";
+        else if (e.thumbs && e.thumbs.length) t = "[Foto]";
+      }
+      parts.push({ text: t || "." });
+      return { role: "user", parts: parts };
+    });
+    var body = { systemInstruction: { parts: [{ text: sysText() }] }, contents: contents };
+    if (useSearch) body.tools = [{ google_search: {} }];
+    if (!state.noThink) body.generationConfig = { thinkingConfig: { thinkingLevel: "minimal" } };  // jawaban lebih cepat
+    return body;
+  }
+
+  function useProxy(){ return !state.key && !!PROXY_URL; }
+
+  function callGemini(useSearch, model){
+    var px = useProxy();
+    var url = px
+      ? PROXY_URL.replace(/\/+$/, "") + "/?model=" + encodeURIComponent(model)
+      : "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":streamGenerateContent?alt=sse";
+    var headers = { "Content-Type": "application/json" };
+    if (!px) headers["x-goog-api-key"] = state.key;
+    return fetch(url, { method: "POST", headers: headers, body: JSON.stringify(buildBody(useSearch)) }).then(function(r){
+      if (r.ok) return { ok: true, status: r.status, r: r };
+      return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: false, status: r.status, j: j }; });
+    });
+  }
+
+  // Baca jawaban sedikit demi sedikit supaya teks langsung muncul.
+  function readStream(r, onText){
+    var reader = r.body.getReader(), dec = new TextDecoder(), buf = "", full = "", block = "", src = [], seen = {};
+    function handle(line){
+      line = line.trim();
+      if (line.indexOf("data:") !== 0) return;
+      var payload = line.slice(5).trim();
+      if (!payload) return;
+      try {
+        var j = JSON.parse(payload);
+        var c = j.candidates && j.candidates[0];
+        if (c && c.content && c.content.parts) c.content.parts.forEach(function(p){ if (p.text && !p.thought) full += p.text; });
+        var gm = c && c.groundingMetadata;
+        if (gm && gm.groundingChunks) gm.groundingChunks.forEach(function(g){
+          if (g.web && g.web.uri && !seen[g.web.uri]){ seen[g.web.uri] = 1; src.push({ t: g.web.title || "", u: g.web.uri }); }
+        });
+        if (j.promptFeedback && j.promptFeedback.blockReason) block = j.promptFeedback.blockReason;
+      } catch (e) {}
+    }
+    function pump(){
+      return reader.read().then(function(x){
+        if (x.done){ if (buf) handle(buf); return { text: full, block: block, src: src }; }
+        buf += dec.decode(x.value, { stream: true });
+        var lines = buf.split("\n");
+        buf = lines.pop();
+        lines.forEach(handle);
+        if (full) onText(full);
+        return pump();
+      });
+    }
+    return pump();
+  }
+
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  // Coba model pilihan dulu, ulangi bila server sibuk, lalu pindah ke model cadangan.
+  function tryModels(useSearch){
+    var list = [state.model, "gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"].filter(function(m, i, a){ return m && a.indexOf(m) === i; });
+    var last = null;
+    function attempt(mi, n){
+      if (mi >= list.length) return Promise.resolve(last);
+      return callGemini(useSearch, list[mi]).then(function(res){
+        last = res;
+        if (res.ok) return res;
+        if (res.status === 400 && !state.noThink){ state.noThink = true; return attempt(mi, n); }  // model tidak mengenal pengaturan cepat
+        var busyErr = res.status >= 500 || res.status === 429;
+        if (!busyErr) return (res.status === 404 && mi + 1 < list.length) ? attempt(mi + 1, 0) : res;
+        if (res.status >= 500 && n < 1) return sleep(1500).then(function(){ return attempt(mi, n + 1); });
+        return attempt(mi + 1, 0);
+      });
+    }
+    return attempt(0, 0);
+  }
+
+  function errText(res){
+    var m = (res.j && res.j.error && res.j.error.message) || "";
+    if (res.status === 400 && /API key/i.test(m)) return "API key tidak valid. Buka Pengaturan dan periksa kuncinya.";
+    if ((res.status === 401 || res.status === 403) && !useProxy()) return "Kuncinya ditolak. Pastikan API key Gemini benar dan aktif.";
+    if (res.status === 404) return "Model \"" + state.model + "\" tidak ditemukan. Buka Pengaturan dan ganti nama modelnya.";
+    if (res.status === 413) return "File terlalu besar. Coba VN yang lebih pendek atau foto lebih sedikit.";
+    if (res.status === 429) return useProxy()
+      ? "Jatah gratis yang dipakai bersama sedang penuh. Tunggu satu menit, atau masukkan API key Gemini milikmu sendiri di Pengaturan."
+      : "Batas pemakaian gratis sedang penuh. Tunggu satu menit lalu coba lagi.";
+    if (res.status === 403 && useProxy()) return "Server FERO AI menolak permintaan ini. Coba buka lewat link atau aplikasi resminya.";
+    if (res.status >= 500) return "Server Google sedang sibuk. FERO sudah mencoba beberapa model. Tunggu 1-2 menit lalu kirim lagi.";
+    return "Terjadi masalah (" + res.status + "). " + m;
+  }
+
+  function send(entry){
+    state.hist.push(entry);
+    persist();
+    var first = chat.querySelector(".hello");
+    if (first) first.remove();
+    addUser(entry);
+    var search = wantSearch(entry);
+    var wait = document.createElement("div");
+    wait.className = "msg ai";
+    wait.innerHTML = '<div class="av">F</div><div class="body"><span class="dots"><i></i><i></i><i></i></span>' +
+      (search ? '<span class="waitlbl">Mencari info terbaru...</span>' : "") + '</div>';
+    chat.appendChild(wait);
+    toBottom();
+    busy = true; sendBtn.disabled = true; micBtn.disabled = true;
+
+    function fail(msg){
+      wait.remove();
+      state.hist.pop(); persist();
+      var el = chat.querySelectorAll(".msg.user"); if (el.length) el[el.length - 1].remove();
+      addErr(msg);
+      if (entry.text) q.value = entry.text;
+      if (entry.imgs && entry.imgs.length){
+        pending = entry.imgs.map(function(im, i){ return { mime: im.mime, b64: im.b64, thumb: entry.thumbs[i] }; });
+        renderTray();
+      }
+      if (entry.vn) addErr("VN tidak terkirim. Rekam ulang ya.");
+      grow(); sync();
+    }
+
+    tryModels(search).then(function(res){
+      if (!res.ok && search && res.status !== 401 && res.status !== 403) return tryModels(false);
+      return res;
+    }).then(function(res){
+      if (!res.ok){ fail(errText(res)); return; }
+      var body = wait.querySelector(".body");
+      return readStream(res.r, function(t){
+        var stick = nearBottom();
+        body.innerHTML = render(t);
+        if (stick) toBottom();
+      }).then(function(out){
+        var ans = out.text;
+        if (!ans){
+          ans = out.block ? "Pesan ini tidak bisa dijawab (" + out.block + "). Coba ubah pertanyaannya." : "Jawabannya kosong. Coba kirim ulang pertanyaannya.";
+        }
+        fillAi(wait, ans, out.src, true);
+        state.hist.push({ role: "model", text: ans, src: out.src });
+        persist();
+        toBottom();
+      });
+    }).catch(function(){
+      fail("Tidak bisa terhubung ke internet. Periksa koneksimu lalu coba lagi.");
+    }).then(function(){
+      busy = false; sendBtn.disabled = false; micBtn.disabled = false;
+    });
+  }
+
+  $("f").addEventListener("submit", function(e){
+    e.preventDefault();
+    var text = q.value.trim();
+    if ((!text && !pending.length) || busy) return;
+    if (!state.key && !PROXY_URL){ openSettings(); return; }
+    var entry = { role: "user", text: text };
+    if (pending.length){
+      entry.imgs = pending.map(function(p){ return { mime: p.mime, b64: p.b64 }; });
+      entry.thumbs = pending.map(function(p){ return p.thumb; });
+    }
+    pending = []; renderTray();
+    q.value = ""; grow(); sync();
+    send(entry);
+  });
+
+  q.addEventListener("keydown", function(e){
+    if (e.key === "Enter" && !e.shiftKey && window.matchMedia("(hover:hover)").matches){
+      e.preventDefault(); $("f").requestSubmit();
+    }
+  });
+
+  // ---------- Pengaturan ----------
+  function openSettings(){
+    $("key").value = state.key;
+    $("model").value = state.model;
+    $("search").value = state.search;
+    sheet.hidden = false;
+    $("key").focus();
+  }
+  function closeSettings(){ sheet.hidden = true; }
+
+  $("openSet").addEventListener("click", openSettings);
+  $("closeSet").addEventListener("click", closeSettings);
+  sheet.addEventListener("click", function(e){ if (e.target === sheet) closeSettings(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !sheet.hidden) closeSettings(); });
+
+  $("saveSet").addEventListener("click", function(){
+    state.key = $("key").value.trim();
+    state.model = $("model").value.trim() || "gemini-3.8-flash";
+    state.search = $("search").value;
+    state.noThink = false;
+    save("fero_key", state.key); save("fero_model_v3", state.model); save("fero_search_v3", state.search);
+    closeSettings();
+  });
+
+  var wipeArmed = false;
+  $("wipe").addEventListener("click", function(){
+    var b = $("wipe");
+    if (!wipeArmed){ wipeArmed = true; b.textContent = "Tekan lagi untuk menghapus"; setTimeout(function(){ wipeArmed = false; b.textContent = "Hapus semua riwayat chat"; }, 3000); return; }
+    state.hist = [];
+    persist(); wipeArmed = false; b.textContent = "Hapus semua riwayat chat"; closeSettings(); draw();
+  });
+
+  $("newChat").addEventListener("click", function(){
+    if (busy || rec) return;
+    state.hist = []; pending = []; renderTray(); persist(); draw(); sync();
+  });
+
+  $("setIntro").textContent = PROXY_URL
+    ? "FERO AI sudah bisa dipakai tanpa kunci. Jatah gratisnya dipakai bersama, jadi kalau penuh, masukkan API key Gemini milikmu sendiri (gratis) di bawah ini. Kunci hanya tersimpan di browser HP kamu."
+    : "FERO AI memakai Gemini API milik Google. Kuncinya gratis dan hanya tersimpan di browser HP kamu.";
+  draw();
+  if (!state.key && !PROXY_URL) openSettings();
+
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener("load", function(){ navigator.serviceWorker.register("sw-v2.js").catch(function(){}); });
+  }
+})();
+</script>
+</body>
+</html>
