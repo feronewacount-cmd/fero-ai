@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d14">
+<title>FERO AI v3</title>
+<link rel="manifest" href="manifest-v3.json">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#0b0d14; --panel:#131724; --panel2:#1a1f31; --line:#262c42;
+  --text:#e8ebf5; --muted:#8a92ad; --accent:#6c7bff; --accent2:#a56bff;
+  --ok:#3ddc97; --warn:#ffb84d; --bad:#ff6b6b;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+#app,#login{height:100vh;height:100dvh}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.hidden{display:none!important}
+
+/* LOGIN */
+#login{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;
+  background:radial-gradient(600px 400px at 50% 0%,#1d2350 0%,transparent 70%)}
+#login img{width:112px;height:112px;border-radius:28px;box-shadow:0 10px 40px #6c7bff44;margin-bottom:20px}
+#login h1{font-size:28px;letter-spacing:.5px}
+#login p{color:var(--muted);margin:8px 0 28px;font-size:14px;max-width:300px}
+.gbtn{display:flex;align-items:center;gap:10px;background:#fff;color:#222;padding:12px 22px;border-radius:999px;font-weight:600;font-size:15px;box-shadow:0 4px 18px #0006}
+.gbtn svg{width:20px;height:20px}
+#loginErr{color:var(--bad);font-size:13px;margin-top:14px;max-width:300px}
+
+/* APP */
+#app{display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));
+  background:var(--panel);border-bottom:1px solid var(--line)}
+header img{width:34px;height:34px;border-radius:10px}
+header .t{font-weight:700;font-size:16px;flex:1}
+.badge{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.badge.pro{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:0}
+.badge.dev{background:var(--ok);color:#06281b;border:0}
+.iconbtn{width:34px;height:34px;border-radius:10px;background:var(--panel2);display:grid;place-items:center;font-size:16px}
+
+#chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.msg{max-width:84%;padding:9px 13px;border-radius:16px;font-size:14.5px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-bottom-right-radius:5px}
+.msg.ai{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:5px}
+.msg.sys{align-self:center;background:none;color:var(--muted);font-size:12.5px;text-align:center;padding:4px}
+.msg img{max-width:100%;border-radius:10px;display:block;margin-bottom:6px}
+.empty{margin:auto;text-align:center;color:var(--muted);font-size:14px}
+.empty img{width:84px;height:84px;border-radius:22px;margin-bottom:12px;opacity:.95}
+
+#preview{display:flex;gap:8px;padding:0 12px 6px;align-items:center;font-size:12.5px;color:var(--muted)}
+#preview img{height:46px;border-radius:8px}
+
+footer{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
+.row{display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:10px 13px;font:inherit;font-size:16px;resize:none;max-height:120px;outline:none}
+textarea:focus{border-color:var(--accent)}
+.send{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:18px;color:#fff;flex:none}
+.send:disabled{opacity:.5}
+.attach{width:42px;height:42px;border-radius:13px;background:var(--panel2);display:grid;place-items:center;font-size:18px;flex:none}
+.quota{font-size:11.5px;color:var(--muted);text-align:center;margin-top:6px}
+
+/* PANELS */
+.sheet{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;z-index:20}
+.sheet .box{width:100%;max-height:82%;overflow:auto;background:var(--panel);border-radius:22px 22px 0 0;padding:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+.sheet h3{margin-bottom:12px}
+.sheet input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:10px 12px;font:inherit;margin-bottom:8px;outline:none}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px}
+.btn.ghost{background:var(--panel2);color:var(--text)}
+.btn.red{background:var(--bad)}
+.list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.item{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border-radius:10px;padding:8px 12px;font-size:13.5px;gap:8px}
+.item span{overflow:hidden;text-overflow:ellipsis}
+.small{color:var(--muted);font-size:12.5px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <img src="icon-512.png" alt="FERO AI">
+  <h1>FERO AI v3</h1>
+  <p>Masuk dengan akun Google untuk mulai ngobrol.</p>
+  <button class="gbtn" id="gLogin">
+    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    Masuk dengan Google
+  </button>
+  <div id="loginErr"></div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <header>
+    <img src="icon-192.png" alt="">
+    <div class="t">FERO AI</div>
+    <span class="badge" id="badge">FREE</span>
+    <button class="iconbtn hidden" id="btnAdmin" title="Admin">⚙️</button>
+    <button class="iconbtn" id="btnMenu" title="Menu">⋯</button>
+  </header>
+
+  <div id="chat"></div>
+
+  <div id="preview" class="hidden"><img id="prevImg"><span id="prevName"></span><button id="prevX" class="iconbtn">✕</button></div>
+
+  <footer>
+    <div class="row">
+      <button class="attach" id="btnAttach" title="Kirim foto">📎</button>
+      <textarea id="input" rows="1" placeholder="Tulis pesan…"></textarea>
+      <button class="send" id="btnSend">➤</button>
+    </div>
+    <div class="quota" id="quota"></div>
+    <input type="file" id="file" accept="image/*" class="hidden">
+  </footer>
+</div>
+
+<!-- MENU -->
+<div class="sheet hidden" id="menuSheet"><div class="box">
+  <h3 id="menuEmail">Akun</h3>
+  <p class="small" id="menuInfo"></p>
+  <div class="list">
+    <button class="btn ghost" id="btnClear">Hapus riwayat chat</button>
+    <button class="btn ghost" id="btnPay">Cara upgrade ke Pro</button>
+    <button class="btn red" id="btnLogout">Keluar</button>
+    <button class="btn ghost" id="menuClose">Tutup</button>
+  </div>
+</div></div>
+
+<!-- ADMIN -->
+<div class="sheet hidden" id="adminSheet"><div class="box">
+  <h3>Panel Developer</h3>
+  <input id="adminEmail" type="email" placeholder="email pengguna yang sudah bayar">
+  <div style="display:flex;gap:8px">
+    <button class="btn" id="adminGrant">Jadikan Pro</button>
+    <button class="btn ghost" id="adminRefresh">Muat daftar</button>
+  </div>
+  <div class="list" id="adminList"></div>
+  <div class="list"><button class="btn ghost" id="adminClose">Tutup</button></div>
+</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* ============ KONFIGURASI (ISI INI) ============ */
+const FIREBASE_CONFIG = {
+  apiKey: "ISI_API_KEY",
+  authDomain: "ISI_PROJECT.firebaseapp.com",
+  projectId: "ISI_PROJECT_ID",
+  appId: "ISI_APP_ID"
+};
+const API_URL = "https://fero-ai-v3.NAMAKAMU.workers.dev"; // URL Cloudflare Worker
+const DEV_EMAIL = "feronewacount@gmail.com";               // hanya untuk tampilan; cek asli di backend
+const PAY_INFO = "Bayar manual ke developer (transfer/QRIS), kirim bukti + email Google kamu. Setelah dicek, akunmu dijadikan Pro.";
+/* ================================================= */
+
+const $ = id => document.getElementById(id);
+let user = null, token = null, me = {role:"free", used:0, limit:0};
+let history = [];            // {role:'user'|'ai', text, img?}
+let pendingImg = null;       // {mime, data(base64), url}
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth = firebase.auth();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+
+/* ---------- LOGIN ---------- */
+function showLoginErr(m){ $("loginErr").textContent = m || ""; }
+
+$("gLogin").onclick = async () => {
+  showLoginErr("");
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:"select_account"});
+  try {
+    await auth.signInWithPopup(provider);
+  } catch (e) {
+    // popup diblokir / tidak didukung -> pakai redirect
+    if (["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/web-storage-unsupported"].includes(e.code)) {
+      try { await auth.signInWithRedirect(provider); return; } catch (e2) { e = e2; }
+    }
+    if (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request") return;
+    if (e.code === "auth/unauthorized-domain") showLoginErr("Domain belum diizinkan di Firebase (Authentication > Settings > Authorized domains).");
+    else if (e.code === "auth/network-request-failed") showLoginErr("Tidak ada koneksi internet. Coba lagi.");
+    else showLoginErr("Login gagal (" + (e.code || e.message) + "). Coba lagi.");
+  }
+};
+auth.getRedirectResult().catch(e => showLoginErr("Login gagal (" + (e.code||e.message) + ")"));
+
+auth.onAuthStateChanged(async u => {
+  user = u;
+  if (!u) { $("app").classList.add("hidden"); $("login").classList.remove("hidden"); return; }
+  $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  loadHistory();
+  await refreshMe();
+  render();
+});
+
+async function getToken(){ token = await user.getIdToken(); return token; }
+
+async function api(path, opts = {}) {
+  const t = await getToken();
+  const r = await fetch(API_URL + path, {
+    ...opts,
+    headers: { "Content-Type":"application/json", "Authorization":"Bearer " + t }
+  });
+  let j = {};
+  try { j = await r.json(); } catch(_){}
+  if (!r.ok) throw new Error(j.error || ("Error " + r.status));
+  return j;
+}
+
+async function refreshMe(){
+  try { me = await api("/me"); } catch(e) { me = {role:"free", used:0, limit:0, offline:true}; }
+  const b = $("badge");
+  b.textContent = me.role === "dev" ? "DEV" : me.role === "pro" ? "PRO" : "FREE";
+  b.className = "badge " + (me.role === "dev" ? "dev" : me.role === "pro" ? "pro" : "");
+  $("btnAdmin").classList.toggle("hidden", me.role !== "dev");
+  $("btnAttach").classList.toggle("hidden", me.role === "free");
+  $("quota").textContent = me.offline ? "Server tidak terhubung" :
+    (me.role === "dev" ? "Developer: tanpa batas" : `Sisa hari ini: ${Math.max(0, me.limit - me.used)} / ${me.limit}`);
+}
+
+/* ---------- RIWAYAT ---------- */
+const hkey = () => "fero_v3_hist_" + (user ? user.uid : "x");
+function loadHistory(){ try { history = JSON.parse(localStorage.getItem(hkey()) || "[]"); } catch(_) { history = []; } }
+function saveHistory(){ try { localStorage.setItem(hkey(), JSON.stringify(history.slice(-60).map(m => ({role:m.role,text:m.text})))); } catch(_){} }
+
+function render(){
+  const c = $("chat"); c.innerHTML = "";
+  if (!history.length) {
+    c.innerHTML = '<div class="empty"><img src="icon-192.png"><div>Halo ' + esc((user.displayName||"").split(" ")[0]) + '!<br>Mau ngobrol apa hari ini?</div></div>';
+    return;
+  }
+  history.forEach(m => addBubble(m));
+  c.scrollTop = c.scrollHeight;
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function addBubble(m){
+  const d = document.createElement("div");
+  d.className = "msg " + (m.role === "user" ? "user" : m.role === "sys" ? "sys" : "ai");
+  if (m.img) { const i = document.createElement("img"); i.src = m.img; d.appendChild(i); }
+  d.appendChild(document.createTextNode(m.text));
+  $("chat").appendChild(d);
+  $("chat").scrollTop = $("chat").scrollHeight;
+  return d;
+}
+
+/* ---------- KIRIM ---------- */
+const input = $("input");
+input.addEventListener("input", () => { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 120) + "px"; });
+input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 700) { e.preventDefault(); send(); } });
+$("btnSend").onclick = send;
+
+$("btnAttach").onclick = () => $("file").click();
+$("file").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    // kecilkan gambar supaya cepat
+    const img = new Image();
+    img.onload = () => {
+      const max = 1024, s = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s);
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      const url = cv.toDataURL("image/jpeg", 0.8);
+      pendingImg = { mime:"image/jpeg", data:url.split(",")[1], url };
+      $("prevImg").src = url; $("prevName").textContent = f.name; $("preview").classList.remove("hidden");
+    };
+    img.src = rd.result;
+  };
+  rd.readAsDataURL(f); e.target.value = "";
+};
+$("prevX").onclick = () => { pendingImg = null; $("preview").classList.add("hidden"); };
+
+let busy = false;
+async function send(){
+  const text = input.value.trim();
+  if ((!text && !pendingImg) || busy) return;
+  busy = true; $("btnSend").disabled = true;
+  const um = { role:"user", text: text || "(foto)", img: pendingImg ? pendingImg.url : null };
+  const img = pendingImg;
+  history.push(um); input.value = ""; input.style.height = "auto";
+  pendingImg = null; $("preview").classList.add("hidden");
+  if (history.length === 1) render(); else addBubble(um);
+  const wait = addBubble({role:"ai", text:"…"});
+  try {
+    const ctx = history.slice(-12, -1).filter(m => m.role !== "sys").map(m => ({role:m.role, text:m.text}));
+    const r = await api("/chat", { method:"POST", body: JSON.stringify({
+      message: text, history: ctx, image: img ? { mime: img.mime, data: img.data } : null
+    })});
+    wait.textContent = r.reply;
+    history.push({ role:"ai", text:r.reply });
+    if (r.used != null) { me.used = r.used; $("quota").textContent = me.role === "dev" ? "Developer: tanpa batas" : `Sisa hari ini: ${Math.max(0, me.limit - me.used)} / ${me.limit}`; }
+  } catch(e) {
+    wait.className = "msg sys"; wait.textContent = "⚠️ " + e.message;
+    history.pop();
+    if (!input.value) input.value = text;   // kembalikan teks supaya bisa dikirim ulang
+    if (img && !pendingImg) { pendingImg = img; $("prevImg").src = img.url; $("preview").classList.remove("hidden"); }
+  }
+  saveHistory(); busy = false; $("btnSend").disabled = false;
+}
+
+/* ---------- MENU ---------- */
+const show = (id, v=true) => $(id).classList.toggle("hidden", !v);
+$("btnMenu").onclick = () => { $("menuEmail").textContent = user.email; $("menuInfo").textContent = "Paket: " + me.role.toUpperCase(); show("menuSheet"); };
+$("menuClose").onclick = () => show("menuSheet", false);
+$("btnClear").onclick = () => { history = []; saveHistory(); render(); show("menuSheet", false); };
+$("btnPay").onclick = () => { alert(PAY_INFO); };
+$("btnLogout").onclick = async () => { show("menuSheet", false); await auth.signOut(); };
+
+/* ---------- ADMIN ---------- */
+$("btnAdmin").onclick = () => { show("adminSheet"); loadPro(); };
+$("adminClose").onclick = () => show("adminSheet", false);
+$("adminRefresh").onclick = loadPro;
+$("adminGrant").onclick = async () => {
+  const email = $("adminEmail").value.trim().toLowerCase(); if (!email) return;
+  try { await api("/admin/grant", {method:"POST", body: JSON.stringify({email})}); $("adminEmail").value = ""; loadPro(); }
+  catch(e){ alert(e.message); }
+};
+async function loadPro(){
+  try {
+    const r = await api("/admin/list");
+    const l = $("adminList"); l.innerHTML = "";
+    if (!r.emails.length) l.innerHTML = '<div class="small">Belum ada pengguna Pro.</div>';
+    r.emails.forEach(em => {
+      const d = document.createElement("div"); d.className = "item";
+      d.innerHTML = "<span>" + esc(em) + "</span>";
+      const b = document.createElement("button"); b.className = "btn red"; b.style.padding = "6px 10px"; b.textContent = "Cabut";
+      b.onclick = async () => { await api("/admin/revoke", {method:"POST", body: JSON.stringify({email:em})}); loadPro(); };
+      d.appendChild(b); l.appendChild(d);
+    });
+  } catch(e){ $("adminList").innerHTML = '<div class="small">' + esc(e.message) + '</div>'; }
+}
+
+/* ---------- PWA ---------- */
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-v3.js").catch(()=>{});
+</script>
+</body>
+</html>
